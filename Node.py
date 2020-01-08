@@ -18,35 +18,30 @@ class Node:
     def get_next_nodes(self):
 
         next_nodes = []
-        
-        for i in range(len(self.matrix)):
-            for j in range(len(self.matrix)):
-                if self.matrix[i][j] == 0:
-                    tmp_i, tmp_j = i, j
-                    break
 
-        if tmp_i > 0:
-            matrix = [x[:] for x in self.matrix]
-            matrix[tmp_i][tmp_j] = matrix[tmp_i - 1][tmp_j]
-            matrix[tmp_i - 1][tmp_j] = 0
-            next_nodes.append(matrix)
+        for i, x in enumerate(self.matrix):
+            if x == 0:
+                empty_pos = (i // self.size, i % self.size)
 
-        if tmp_j > 0:
-            matrix = [x[:] for x in self.matrix]
-            matrix[tmp_i][tmp_j] = matrix[tmp_i][tmp_j - 1]
-            matrix[tmp_i][tmp_j - 1] = 0
+        if empty_pos[0] > 0:
+            matrix = self.matrix[:]
+            matrix[empty_pos[0] * self.size + empty_pos[1]] = matrix[(empty_pos[0] - 1) * self.size + empty_pos[1]]
+            matrix[(empty_pos[0] - 1)* self.size + empty_pos[1]] = 0
             next_nodes.append(matrix)
-
-        if tmp_i < len(self.matrix) - 1:
-            matrix = [x[:] for x in self.matrix]
-            matrix[tmp_i][tmp_j] = matrix[tmp_i + 1][tmp_j]
-            matrix[tmp_i + 1][tmp_j] = 0
+        if empty_pos[0] < self.size - 1:
+            matrix = self.matrix[:]
+            matrix[empty_pos[0] * self.size + empty_pos[1]] = matrix[(empty_pos[0] + 1) * self.size + empty_pos[1]]
+            matrix[(empty_pos[0] + 1)* self.size + empty_pos[1]] = 0
             next_nodes.append(matrix)
-        
-        if tmp_j < len(self.matrix) - 1:
-            matrix = [x[:] for x in self.matrix]
-            matrix[tmp_i][tmp_j] = matrix[tmp_i][tmp_j + 1]
-            matrix[tmp_i][tmp_j + 1] = 0
+        if empty_pos[1] > 0:
+            matrix = self.matrix[:]
+            matrix[empty_pos[0] * self.size + empty_pos[1]] = matrix[empty_pos[0] * self.size + empty_pos[1] - 1]
+            matrix[empty_pos[0] * self.size + empty_pos[1] - 1] = 0
+            next_nodes.append(matrix)
+        if empty_pos[1] < self.size - 1:
+            matrix = self.matrix[:]
+            matrix[empty_pos[0] * self.size + empty_pos[1]] = matrix[empty_pos[0] * self.size + empty_pos[1] + 1]
+            matrix[empty_pos[0] * self.size + empty_pos[1] + 1] = 0
             next_nodes.append(matrix)
 
         return next_nodes
@@ -65,14 +60,14 @@ class Node:
 
         path = []
 
-        tmp_matrix = [x[:] for x in self.matrix]
+        tmp_matrix = self.matrix[:]
         path.append(tmp_matrix)
 
         tmp_parent = self.get_parent()
 
         while tmp_parent is not None:
             
-            tmp_matrix = [x[:] for x in tmp_parent.get_matrix()]
+            tmp_matrix = tmp_parent.get_matrix()[:]
             path.append(tmp_matrix)
             tmp_parent = tmp_parent.get_parent()
         
@@ -81,20 +76,12 @@ class Node:
     def compute_h(self):
 
         self.h = 0
-        if self.heuristic == "HammingDistance":
-            for i in range(len(self.target)):
-                for j in range(len(self.target)):
-                    if self.matrix[i][j] != self.target[i][j] and self.matrix[i][j] != 0:
-                        self.h += 1
-        elif self.heuristic == "Manhattan":
-            for nb in range(1,self.size):
-                for i in range(len(self.target)):
-                    for j in range(len(self.target)):
-                        if self.matrix[i][j] == nb:
-                            m_i, m_j = i, j
-                        if self.target[i][j] == nb:
-                            t_i, t_j = i, j
-                self.h += abs(m_i - t_i) + abs(m_j - t_j)
+        
+        for i, x in enumerate(self.matrix):
+            current_pos = (i // self.size, i % self.size)
+            target_pos = (self.target[x])
+            self.h += abs(current_pos[0] - target_pos[0]) + abs(current_pos[1] - target_pos[1])
+
 
     
     def compute_f(self):
@@ -105,14 +92,23 @@ class Node:
     
     def set_parent(self, parent):
         self.parent = parent
+    
+    def check(self):
 
-    def __init__(self, matrix, target, parent=None):
+        state = True
+        for i, x in enumerate(self.matrix):
+            if (i // self.size, i % self.size) != self.target[x]:
+                state = False
+
+        return state
+
+
+    def __init__(self, matrix, target, size, parent=None):
 
         self.matrix = matrix
         self.parent = parent
         self.target = target
-        self.size = len(matrix) * len(matrix)
-        self.heuristic = "Manhattan"
+        self.size = size
         self.compute_g()
         self.compute_h()
         self.compute_f()
