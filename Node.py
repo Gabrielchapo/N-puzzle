@@ -81,10 +81,21 @@ class Node:
     def compute_h(self):
 
         self.h = 0
-        for i in range(len(self.target)):
-            for j in range(len(self.target)):
-                if self.matrix[i][j] != self.target[i][j] and self.matrix[i][j] != 0:
-                    self.h += 1
+        if self.heuristic == "HammingDistance":
+            for i in range(len(self.target)):
+                for j in range(len(self.target)):
+                    if self.matrix[i][j] != self.target[i][j] and self.matrix[i][j] != 0:
+                        self.h += 1
+        elif self.heuristic == "Manhattan":
+            for nb in range(1,self.size):
+                for i in range(len(self.target)):
+                    for j in range(len(self.target)):
+                        if self.matrix[i][j] == nb:
+                            m_i, m_j = i, j
+                        if self.target[i][j] == nb:
+                            t_i, t_j = i, j
+                self.h += abs(m_i - t_i) + abs(m_j - t_j)
+
     
     def compute_f(self):
         self.f = self.g + self.h
@@ -100,6 +111,8 @@ class Node:
         self.matrix = matrix
         self.parent = parent
         self.target = target
+        self.size = len(matrix) * len(matrix)
+        self.heuristic = "Manhattan"
         self.compute_g()
         self.compute_h()
         self.compute_f()

@@ -19,9 +19,9 @@ def A_search_algorithm(matrix, target):
     open_list = []
     closed_list = []
     open_list.append(start)
+    i = 0
     while len(open_list) > 0:
-        #for i in range(3):
-
+        i+= 1
         process = min_f(open_list)
         if process.get_matrix() == target:
             return process
