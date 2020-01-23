@@ -1,11 +1,11 @@
-from heuristics import get_manhattan_dist
+from heuristics import manhattan_dist, hamming_dist
 from get_next_nodes import get_next_nodes
 import heapq
 
 def A_search_algorithm(matrix, target, size):
 
     g = 0
-    h = get_manhattan_dist(matrix, target, size)
+    h = manhattan_dist(matrix, target, size)
     start = (g + h, g, h, matrix, None)
     open_list = []
     closed_list = {}
@@ -39,7 +39,7 @@ def A_search_algorithm(matrix, target, size):
             if str(next_node) not in closed_list:
 
                 g = process[1] + 1
-                h = get_manhattan_dist(next_node, target, size)
+                h = manhattan_dist(next_node, target, size)
                 new_node = (g + h, g, h, next_node, process)
 
                 if str(new_node[3]) not in hash_table:
