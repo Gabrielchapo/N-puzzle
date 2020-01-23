@@ -1,45 +1,47 @@
 def parse_content(content):
     
-    size = int(content[0])
+    try:
+        size = int(content[0])
+    except:
+        print("Error: size is incorrect")
+        exit()
+    
+    # check map size
+    if size <= 2:
+        print("Error: Map too small")
+        exit()
 
     content = content[1:]
+    count = 0
     matrix = []
 
     for line in content:
+        
+        # pick off comments
+        if "#" in line:
+            line = line[:line.index("#")]
+
         sub = line.split()
-        sub = [int(x) for x in sub]
-        [matrix.append(x) for x in sub]
+
+        if len(sub) > 0:
+            # map values must be integers
+            try:
+                sub = [int(x) for x in sub]
+            except:
+                print("Error: invalid map")
+                exit()
+            
+            # check map size
+            if len(sub) != size:
+                print("Error: invalid map")
+                exit()
+            [matrix.append(x) for x in sub]
+            
+            count += 1
+
+    # check map size
+    if count != size:
+        print("Error: invalid map")
+        exit()
         
     return size, matrix
-
-def get_target(size):
-    
-    target = [[0 for x in range(size)] for y in range(size)]
-
-    count = 1
-
-    for i in range(size // 2):
-
-        for j in range(size - 1 - i * 2):
-            target[i][j + i] = count
-            count += 1
-        for j in range(size - 1 - i * 2):
-            target[j + i][size - 1 - i] = count
-            count += 1
-        for j in range(size - 1 - i * 2):
-            target[size - 1 - i][size - 1 - j - i] = count
-            count += 1
-        for j in range(size - 1 - i * 2):
-            if count < size * size:
-                target[size - 1 - j - i][i] = count
-            count += 1
-
-    size = len(target)
-
-    target_dic = {}
-
-    for i in range(size):
-        for j in range(size):
-            target_dic[target[i][j]] = (i,j)
-
-    return target_dic
