@@ -1,15 +1,15 @@
-# Project Title
+# N-puzzle resolver
 
-One Paragraph of project description goes here
+The objective is to implement different search algorithms to resolve a N-Puzzle.
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
 
-### Prerequisites
-
-What things you need to install the software and how to install them
-
+Generate a map:
 ```
-Give examples
+python2.7 generator.py 3 -s > map
 ```
+
+Solve the map:
+```
+python3.7 main.py map
