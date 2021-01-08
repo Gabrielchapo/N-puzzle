@@ -20,9 +20,10 @@ def A_search_algorithm(matrix, target, size):
     open_list = []
     closed_list = []
     open_list.append(start)
-    i = 0
+
     while len(open_list) > 0:
 
+        print("open list:", len(open_list), "closed list:", len(closed_list),end="\r")
         process = min_f(open_list)
 
         if process.check() == True:

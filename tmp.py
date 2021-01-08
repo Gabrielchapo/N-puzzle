@@ -1,6 +1,51 @@
 import argparse
 import heapq
-from parsing import get_target, parse_content
+
+def parse_content(content):
+    
+    size = int(content[0])
+
+    content = content[1:]
+    matrix = []
+
+    for line in content:
+        sub = line.split()
+        sub = [int(x) for x in sub]
+        [matrix.append(x) for x in sub]
+        
+    return size, matrix
+
+def get_target(size):
+    
+    target = [[0 for x in range(size)] for y in range(size)]
+
+    count = 1
+
+    for i in range(size // 2):
+
+        for j in range(size - 1 - i * 2):
+            target[i][j + i] = count
+            count += 1
+        for j in range(size - 1 - i * 2):
+            target[j + i][size - 1 - i] = count
+            count += 1
+        for j in range(size - 1 - i * 2):
+            target[size - 1 - i][size - 1 - j - i] = count
+            count += 1
+        for j in range(size - 1 - i * 2):
+            if count < size * size:
+                target[size - 1 - j - i][i] = count
+            count += 1
+
+    size = len(target)
+
+    target_dic = {}
+
+    for i in range(size):
+        for j in range(size):
+            target_dic[target[i][j]] = (i,j)
+
+    return target_dic
 
 def get_h(grid):
     count = 0
@@ -21,12 +66,12 @@ def get_next_nodes(process):
     if empty_pos[0] > 0:
         matrix = process[:]
         matrix[empty_pos[0] * size + empty_pos[1]] = matrix[(empty_pos[0] - 1) * size + empty_pos[1]]
-        matrix[(empty_pos[0] - 1)* size + empty_pos[1]] = 0
+        matrix[(empty_pos[0] - 1) * size + empty_pos[1]] = 0
         next_nodes.append(matrix)
     if empty_pos[0] < size - 1:
         matrix = process[:]
         matrix[empty_pos[0] * size + empty_pos[1]] = matrix[(empty_pos[0] + 1) * size + empty_pos[1]]
-        matrix[(empty_pos[0] + 1)* size + empty_pos[1]] = 0
+        matrix[(empty_pos[0] + 1) * size + empty_pos[1]] = 0
         next_nodes.append(matrix)
     if empty_pos[1] > 0:
         matrix = process[:]
@@ -50,9 +95,11 @@ def A_search_algorithm():
     closed_list = {}
     heapq.heappush(open_list, start)
     hash_table = {}
-    hash_table[str(start[3])] = {'g':g, 'parent':None}
+    hash_table[str(start[3])] = {'g': g, 'parent': None}
 
     while len(open_list):
+
+        print("open list:", len(open_list), "closed list:", len(closed_list),end="\r")
 
         process = heapq.heappop(open_list)
 
@@ -91,19 +138,21 @@ def A_search_algorithm():
                         hash_table[str(new_node[3])]['g'] = g
                         hash_table[str(new_node[3])]['parent'] = process
 
-parser = argparse.ArgumentParser()
-parser.add_argument('file', type=argparse.FileType('r'))
-args = parser.parse_args()
-content = args.file.readlines()
+if __name__ == "__main__":
 
-size, matrix = parse_content(content[1:])
-target = get_target(size)
-print(target)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('file', type=argparse.FileType('r'))
+    args = parser.parse_args()
+    content = args.file.readlines()
 
-path = A_search_algorithm()
-for each_path in path:
-    for i, x in enumerate(each_path):
-        if i % size == 0:
-            print()
-        print(x, end=" ")
-    print("\n-----", end="")
+    size, matrix = parse_content(content[1:])
+    target = get_target(size)
+    print(target)
+
+    path = A_search_algorithm()
+    for each_path in path:
+        for i, x in enumerate(each_path):
+            if i % size == 0:
+                print()
+            print(x, end=" ")
+        print("\n-----", end="")
