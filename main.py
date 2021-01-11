@@ -1,6 +1,7 @@
 import argparse
 import heapq
 from math import sqrt
+import numpy as np
 
 def parse_content(content):
     
@@ -108,8 +109,21 @@ def search_algorithm(matrix, target, heuristic, algo):
                     h = get_heuristic(node, target, heuristic, algo)
                     heapq.heappush(queue, (g + h, g, h, node, process))
                     open_list[str(node)] = g
-        
-    exit("This puzzle is unsolvable.")
+
+def check_solvability(matrix, target, size):
+    nb_inversions = 0
+    for i in range(size * size - 1):
+        for j in range(i + 1, size * size): 
+            coord = (matrix[i], matrix[j])
+            if target.index(coord[0]) > target.index(coord[1]):
+                nb_inversions += 1
+    index_zero_matrix = (matrix.index(0) // size, matrix.index(0) % size)
+    index_zero_target = (target.index(0) // size, target.index(0) % size)
+    tmp = abs(index_zero_matrix[0] - index_zero_target[0]) + abs(index_zero_matrix[0] - index_zero_target[0])
+    if (tmp % 2 == 0 and nb_inversions % 2 == 0) or (tmp % 2 == 1 and nb_inversions % 2 == 1):
+        return
+    else:
+        exit("This puzzle is unsolvable.")
 
 if __name__ == "__main__":
     
@@ -121,7 +135,8 @@ if __name__ == "__main__":
 
     size, matrix = parse_content(content)
     target = get_target(size)
-    
+    check_solvability(matrix, target, size)
+
     try:
         algo = int(input("1. A* search\n2. greedy search\n3.Uniform-cost search\n"))
         if algo != 1 and algo != 2 and algo != 3:
