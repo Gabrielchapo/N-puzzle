@@ -7,7 +7,6 @@ def parse_content(content):
     try:
         size = int(content[1])
         matrix = []
-
         for line in content[2:]:
             sub = line.split('#')[0]
             sub = sub.split()
@@ -18,39 +17,32 @@ def parse_content(content):
         exit("Something went wrong with the file.")
 
 def get_target(size):
-    
-    target = [[0 for x in range(size)] for y in range(size)]
-
+    target = [0] * (size**2)
     count = 1
-    target = {}
-    if size % 2 != 0:
-        target[0] = (size // 2, size // 2)
-    else:
-        target[0] = (size // 2, size // 2 - 1)
-
     for i in range(size // 2):
-
         for j in range(size - 1 - i * 2):
-            target[count] = (i, j + i)
+            target[i * size + j + i] = count
             count += 1
         for j in range(size - 1 - i * 2):
-            target[count] = (j + i, size - 1 - i)
+            target[(j + i) * size + size - 1 - i] = count
             count += 1
         for j in range(size - 1 - i * 2):
-            target[count] = (size - 1 - i, size - 1 - j - i)
+            target[(size - 1 - i) * size + size - 1 - j - i] = count
             count += 1
         for j in range(size - 1 - i * 2):
             if count < size * size:
-                target[count] = (size - 1 - j - i, i)
+                target[(size - 1 - j - i) * size + i] = count
             count += 1
-
     return target
 
-def get_heuristic(grid, target, heuristic):
+def get_heuristic(grid, target, heuristic, algo):
     count = 0
+    if algo == 3:
+        return count
     for i, x in enumerate(grid):
         current_pos = (i // size, i % size)
-        target_pos = (target[x])
+        tmp = target.index(x)
+        target_pos = (tmp // size, tmp % size)
         if heuristic == 1:
             count += abs(current_pos[0] - target_pos[0]) + abs(current_pos[1] - target_pos[1])
         elif heuristic == 2:
@@ -88,14 +80,17 @@ def get_next_nodes(process):
 
     return next_nodes
 
-def search_algorithm(matrix, target, heuristic, G_COST):
+def search_algorithm(matrix, target, heuristic, algo):
+    G_COST = 0
+    if algo == 1 or algo == 3:
+        G_COST = 1
     open_list = {}
     closed_list = {}
-    h = get_heuristic(matrix, target, heuristic)
+    h = get_heuristic(matrix, target, heuristic, algo)
     queue = [(h, 0, h, matrix, None)]
     while queue:
         process = heapq.heappop(queue)
-        if process[2] == 0:
+        if str(process[3]) == str(target):
             path = []
             while process:
                 path.append(process[3])
@@ -110,7 +105,7 @@ def search_algorithm(matrix, target, heuristic, G_COST):
                 if str(node) not in closed_list:
                     if str(node) in open_list and g >= open_list[str(node)]:
                         continue
-                    h = get_heuristic(node, target, heuristic)
+                    h = get_heuristic(node, target, heuristic, algo)
                     heapq.heappush(queue, (g + h, g, h, node, process))
                     open_list[str(node)] = g
         
@@ -128,24 +123,19 @@ if __name__ == "__main__":
     target = get_target(size)
     
     try:
-        algo = int(input("1. A* search\n2. greedy search\n"))
-        heuristic = int(input("1. Manhattan distance\n2. Euclidian distance\n3. tiles out of place\n"))
+        algo = int(input("1. A* search\n2. greedy search\n3.Uniform-cost search\n"))
+        if algo != 1 and algo != 2 and algo != 3:
+            exit("Error: wrong input.")
+        if algo != 3:
+            heuristic = int(input("1. Manhattan distance\n2. Euclidian distance\n3. tiles out of place\n"))
+            if heuristic != 1 and heuristic != 2 and heuristic != 3:
+                exit("Error: wrong input.")
+        else:
+            heuristic = 0
     except:
         exit("Error: wrong input.")
-        
-    if heuristic != 1 and heuristic != 2 and heuristic != 3:
-        exit("Error: wrong input.")
-    if algo != 1 and algo != 2:
-        exit("Error: wrong input.")
 
-    if algo == 1:
-        G_COST = 1
-    elif algo == 2:
-        G_COST = 0
-    else:
-        exit("Error: wrong input.")
-    
-    path, complexity = search_algorithm(matrix, target, heuristic, G_COST)
+    path, complexity = search_algorithm(matrix, target, heuristic, algo)
     
     for each_path in path:
         for i, x in enumerate(each_path):
