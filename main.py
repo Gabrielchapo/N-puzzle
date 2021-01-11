@@ -1,5 +1,6 @@
 import argparse
 import heapq
+from math import sqrt
 
 def parse_content(content):
     
@@ -45,104 +46,75 @@ def get_target(size):
 
     return target
 
-def get_h(grid, target):
+def get_heuristic(grid, target, heuristic):
     count = 0
     for i, x in enumerate(grid):
         current_pos = (i // size, i % size)
         target_pos = (target[x])
-        count += abs(current_pos[0] - target_pos[0]) \
-            + abs(current_pos[1] - target_pos[1])
+        if heuristic == 1:
+            count += abs(current_pos[0] - target_pos[0]) + abs(current_pos[1] - target_pos[1])
+        elif heuristic == 2:
+            count += sqrt(pow(current_pos[0] - target_pos[0], 2) + pow(current_pos[1] - target_pos[1], 2))
+        elif heuristic == 3:
+            if current_pos != target_pos:
+                count += 1
     return count
 
 def get_next_nodes(process):
 
     next_nodes = []
-    for i, x in enumerate(process):
-        if x == 0:
-            empty_pos = (i // size, i % size)
-
+    i = process.index(0)
+    empty_pos = (i // size, i % size)
     if empty_pos[0] > 0:
         matrix = process[:]
-        matrix[empty_pos[0] * size + empty_pos[1]] = matrix[(empty_pos[0] - 1) * size + empty_pos[1]]
+        matrix[i] = matrix[(empty_pos[0] - 1) * size + empty_pos[1]]
         matrix[(empty_pos[0] - 1) * size + empty_pos[1]] = 0
         next_nodes.append(matrix)
     if empty_pos[0] < size - 1:
         matrix = process[:]
-        matrix[empty_pos[0] * size + empty_pos[1]] = matrix[(empty_pos[0] + 1) * size + empty_pos[1]]
+        matrix[i] = matrix[(empty_pos[0] + 1) * size + empty_pos[1]]
         matrix[(empty_pos[0] + 1) * size + empty_pos[1]] = 0
         next_nodes.append(matrix)
     if empty_pos[1] > 0:
         matrix = process[:]
-        matrix[empty_pos[0] * size + empty_pos[1]] = matrix[empty_pos[0] * size + empty_pos[1] - 1]
-        matrix[empty_pos[0] * size + empty_pos[1] - 1] = 0
+        matrix[i] = matrix[i - 1]
+        matrix[i - 1] = 0
         next_nodes.append(matrix)
     if empty_pos[1] < size - 1:
         matrix = process[:]
-        matrix[empty_pos[0] * size + empty_pos[1]] = matrix[empty_pos[0] * size + empty_pos[1] + 1]
-        matrix[empty_pos[0] * size + empty_pos[1] + 1] = 0
+        matrix[i] = matrix[i + 1]
+        matrix[i + 1] = 0
         next_nodes.append(matrix)
 
     return next_nodes
 
-def A_search_algorithm(matrix, target):
-
-    open_list = []
+def search_algorithm(matrix, target, heuristic, G_COST):
+    open_list = {}
     closed_list = {}
-    
-    h = get_h(matrix, target)
-    g = 0
-
-    # structure : (g + h, g, h, matrix, parent)
-    start = (g + h, g, h, matrix, None)
-    heapq.heappush(open_list, start)
-
-    g_scores = {}
-    g_scores[str(start[3])] = {'g': g, 'parent': None}
-
-    while len(open_list) > 0:
-
-        #print("open list:", len(open_list), "closed list:", len(closed_list),end="\r")
-        
-        process = heapq.heappop(open_list)
-
-        # If we reach the target
+    h = get_heuristic(matrix, target, heuristic)
+    queue = [(h, 0, h, matrix, None)]
+    while queue:
+        process = heapq.heappop(queue)
         if process[2] == 0:
             path = []
-            nb_step = 0
             while process:
                 path.append(process[3])
                 process = process[4]
-                nb_step += 1
-            return path, nb_step
-
-        # add the current to the closed list
-        closed_list[str(process[3])] = None
-
-        next_nodes = get_next_nodes(process[3])
-        
-        for node in next_nodes:
-
-            # If it's already in closed list, the one in the closed list,
-            # has to be better (better g) so we pass.
-            if str(node) not in closed_list:
-                g = process[1] + 1
-                h = get_h(node, target)
-
-                # add it to the open list of nor present
-                if str(node) not in g_scores:
-                    g_scores[str(node)] = {'g': g, 'parent': process}
-                    heapq.heappush(open_list, (g + h, g, h, node, process))
-                
-                # replace the actual one in the open list if the g score is better 
-                elif g < g_scores[str(node)]['g']:
-                    heapq.heappush(open_list, (g + h, g, h, node, process))
-                    g_scores[str(node)]['g'] = g
-                    g_scores[str(node)]['parent'] = process
+            path.reverse()
+            return path, {'space':len(open_list), 'time':len(closed_list)}
+        if str(process[3]) not in closed_list:
+            closed_list[str(process[3])] = None
+            next_nodes = get_next_nodes(process[3])
+            g = process[1] + G_COST
+            for node in next_nodes:
+                if str(node) not in closed_list:
+                    if str(node) in open_list and g >= open_list[str(node)]:
+                        continue
+                    h = get_heuristic(node, target, heuristic)
+                    heapq.heappush(queue, (g + h, g, h, node, process))
+                    open_list[str(node)] = g
         
     exit("This puzzle is unsolvable.")
-
-
-
 
 if __name__ == "__main__":
     
@@ -151,10 +123,29 @@ if __name__ == "__main__":
     args = parser.parse_args()
     content = args.file.readlines()
 
+
     size, matrix = parse_content(content)
     target = get_target(size)
     
-    path, nb_step = A_search_algorithm(matrix, target)
+    try:
+        algo = int(input("1. A* search\n2. greedy search\n"))
+        heuristic = int(input("1. Manhattan distance\n2. Euclidian distance\n3. tiles out of place\n"))
+    except:
+        exit("Error: wrong input.")
+        
+    if heuristic != 1 and heuristic != 2 and heuristic != 3:
+        exit("Error: wrong input.")
+    if algo != 1 and algo != 2:
+        exit("Error: wrong input.")
+
+    if algo == 1:
+        G_COST = 1
+    elif algo == 2:
+        G_COST = 0
+    else:
+        exit("Error: wrong input.")
+    
+    path, complexity = search_algorithm(matrix, target, heuristic, G_COST)
     
     for each_path in path:
         for i, x in enumerate(each_path):
@@ -163,4 +154,5 @@ if __name__ == "__main__":
             print(x, end=" ")
         print("\n-----", end="")
     
-    print("nb steps:", nb_step)
+    print("\nnb steps:", len(path))
+    print(complexity)
