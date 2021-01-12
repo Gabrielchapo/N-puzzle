@@ -158,4 +158,5 @@ if __name__ == "__main__":
         print("\n-----", end="")
     
     print("\nnb steps:", len(path))
-    print(complexity)
+    print("complexity in time:",complexity["time"])
+    print("complexity in space:",complexity["space"])

@@ -16,12 +16,13 @@ Solve the map:
 python3.7 main.py map
 ```
 
-## Chose between 
+## Chose between 3 algorithms:
 ### A* algorithm
 ### greedy search
 ### uniform-cost search
 
-## and chose between
+
+## and chose between 3 heuristics (except for uniform-cost)
 ### manhattan distance
 ### euclidian distance
 ### tiles out of place distance
