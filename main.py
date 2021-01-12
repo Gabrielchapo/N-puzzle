@@ -126,12 +126,11 @@ def check_solvability(matrix, target, size):
         exit("This puzzle is unsolvable.")
 
 if __name__ == "__main__":
-    
+
     parser = argparse.ArgumentParser()
     parser.add_argument('file', type=argparse.FileType('r'))
     args = parser.parse_args()
     content = args.file.readlines()
-
 
     size, matrix = parse_content(content)
     target = get_target(size)
@@ -151,7 +150,6 @@ if __name__ == "__main__":
         exit("Error: wrong input.")
 
     path, complexity = search_algorithm(matrix, target, heuristic, algo)
-    
     for each_path in path:
         for i, x in enumerate(each_path):
             if i % size == 0:
