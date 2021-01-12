@@ -1,5 +1,7 @@
 # N-puzzle resolver
 
+![alt text](https://github.com/GAbrielchapo/N-puzzle/image.jpg?raw=true)
+
 The objective is to implement different search algorithms to resolve a N-Puzzle.
 
 ## Getting Started
