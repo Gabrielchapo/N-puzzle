@@ -1,6 +1,6 @@
 # N-puzzle resolver
 
-![alt text](https://github.com/Gabrielchapo/N-puzzle/puzzle.png?raw=true)
+![alt text](https://github.com/Gabrielchapo/N-puzzle//blob/master/puzzle.png?raw=true)
 
 The objective is to implement different search algorithms to resolve a N-Puzzle.
 
